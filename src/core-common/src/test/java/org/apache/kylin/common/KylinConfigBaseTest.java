@@ -1258,6 +1258,7 @@ class KylinConfigBaseTest {
     @Test
     void testIsHdfsMetricsPeriodicCalculationEnabled() {
         KylinConfig config = KylinConfig.getInstanceFromEnv();
+        config.setProperty("kylin.metrics.hdfs-periodic-calculation-enabled", "false");
         assertFalse(config.isHdfsMetricsPeriodicCalculationEnabled());
         config.setProperty("kylin.metrics.hdfs-periodic-calculation-enabled", "true");
         assertTrue(config.isHdfsMetricsPeriodicCalculationEnabled());
@@ -1370,6 +1371,14 @@ class KylinConfigBaseTest {
         Assertions.assertEquals(0.0, config.getEpochRenewTimeoutRate());
         config.setProperty("kylin.server.leader-race.heart-beat-timeout-rate", "1");
         Assertions.assertEquals(1.0, config.getEpochRenewTimeoutRate());
+    }
+
+    @Test
+    void testGetSubstitutor() {
+        KylinConfig config = KylinConfig.getInstanceFromEnv();
+        val sub1 = config.getSubstitutor();
+        val sub2 = config.getSubstitutor();
+        Assertions.assertSame(sub1, sub2);
     }
 }
 

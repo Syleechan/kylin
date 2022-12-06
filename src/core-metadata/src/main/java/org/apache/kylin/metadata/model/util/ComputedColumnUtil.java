@@ -626,10 +626,10 @@ public class ComputedColumnUtil {
             return exceptionList;
         }
 
-        public Pair<List<ComputedColumnDesc>, List<KylinException>> getAdjustedCCList(
+        public Pair<List<ComputedColumnDesc>, List<CCConflictDetail>> getAdjustedCCList(
                 List<ComputedColumnDesc> inputCCDescList) {
             List<ComputedColumnDesc> resultCCDescList = Lists.newArrayList();
-            List<KylinException> adjustExceptionList = Lists.newArrayList();
+            List<CCConflictDetail> adjustDetails = Lists.newArrayList();
 
             for (ComputedColumnDesc ccDesc : inputCCDescList) {
                 for (CCConflictDetail detail : this.sameExprDiffNameDetails) {
@@ -638,13 +638,13 @@ public class ComputedColumnUtil {
                     if (newCC.equals(ccDesc)) {
                         logger.info("adjust cc name {} to {}", newCC.getColumnName(), existingCC.getColumnName());
                         ccDesc.setColumnName(existingCC.getColumnName());
-                        adjustExceptionList.add(detail.getAdjustKylinException());
+                        adjustDetails.add(detail);
                         break;
                     }
                 }
                 resultCCDescList.add(ccDesc);
             }
-            return Pair.newPair(resultCCDescList, adjustExceptionList);
+            return Pair.newPair(resultCCDescList, adjustDetails);
         }
     }
 
@@ -702,7 +702,7 @@ public class ComputedColumnUtil {
                 if (checkedCC.contains(cc)) {
                     continue;
                 }
-                ccUsedColsMap.put(cc.getColumnName(), ComputedColumnUtil.getCCUsedColsWithModel(model, cc));
+                ccUsedColsMap.put(cc.getIdentName(), ComputedColumnUtil.getCCUsedColsWithModel(model, cc));
             }
 
             // parse inner expression might cause error, for example timestampdiff
@@ -712,7 +712,7 @@ public class ComputedColumnUtil {
                     continue;
                 }
                 val ccUsedSourceCols = Sets.<String> newHashSet();
-                collectCCUsedSourceCols(cc.getColumnName(), ccUsedColsMap, ccUsedSourceCols);
+                collectCCUsedSourceCols(cc.getIdentName(), ccUsedColsMap, ccUsedSourceCols);
                 ccUsedSourceCols.removeIf(checkedCCUsedSourceCols::contains);
                 if (ccUsedSourceCols.isEmpty() || isColumnAuthorizedFunc.test(ccUsedSourceCols)) {
                     authorizedCC.add(cc);
@@ -726,15 +726,11 @@ public class ComputedColumnUtil {
 
     public static void collectCCUsedSourceCols(String ccColName, Map<String, Set<String>> ccUsedColsMap,
             Set<String> ccUsedSourceCols) {
-        String ccColNameWithoutDot = ccColName.contains(".") ? ccColName.substring(ccColName.lastIndexOf(".") + 1)
-                : ccColName;
-
-        if (!ccUsedColsMap.containsKey(ccColNameWithoutDot)) {
+        if (!ccUsedColsMap.containsKey(ccColName)) {
             ccUsedSourceCols.add(ccColName);
             return;
         }
-
-        for (String usedColumn : ccUsedColsMap.get(ccColNameWithoutDot)) {
+        for (String usedColumn : ccUsedColsMap.get(ccColName)) {
             collectCCUsedSourceCols(usedColumn, ccUsedColsMap, ccUsedSourceCols);
         }
     }

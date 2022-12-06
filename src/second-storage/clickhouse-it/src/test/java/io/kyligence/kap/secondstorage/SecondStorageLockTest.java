@@ -77,6 +77,7 @@ import org.apache.kylin.common.util.JsonUtil;
 import org.apache.kylin.common.util.RandomUtil;
 import org.apache.kylin.common.util.Unsafe;
 import org.apache.kylin.engine.spark.IndexDataConstructor;
+import org.apache.kylin.engine.spark.job.NSparkCubingJob;
 import org.apache.kylin.job.SecondStorageCleanJobBuildParams;
 import org.apache.kylin.job.SecondStorageJobParamUtil;
 import org.apache.kylin.job.execution.AbstractExecutable;
@@ -92,6 +93,7 @@ import org.apache.kylin.metadata.cube.model.NDataSegment;
 import org.apache.kylin.metadata.cube.model.NDataflow;
 import org.apache.kylin.metadata.cube.model.NDataflowManager;
 import org.apache.kylin.metadata.cube.model.NIndexPlanManager;
+import org.apache.kylin.metadata.epoch.EpochManager;
 import org.apache.kylin.metadata.epoch.EpochOrchestrator;
 import org.apache.kylin.metadata.model.ColumnDesc;
 import org.apache.kylin.metadata.model.ManagementType;
@@ -191,10 +193,8 @@ import io.kyligence.kap.clickhouse.job.LoadContext;
 import io.kyligence.kap.clickhouse.job.S3TableSource;
 import io.kyligence.kap.clickhouse.management.ClickHouseConfigLoader;
 import io.kyligence.kap.clickhouse.parser.ShowDatabasesParser;
-import org.apache.kylin.engine.spark.job.NSparkCubingJob;
 import io.kyligence.kap.guava20.shaded.common.collect.ImmutableSet;
 import io.kyligence.kap.guava20.shaded.common.collect.Lists;
-import org.apache.kylin.metadata.epoch.EpochManager;
 import io.kyligence.kap.newten.clickhouse.ClickHouseSimpleITTestUtils;
 import io.kyligence.kap.newten.clickhouse.ClickHouseUtils;
 import io.kyligence.kap.newten.clickhouse.EmbeddedHttpServer;
@@ -349,6 +349,8 @@ public class SecondStorageLockTest implements JobWaiter {
         ReflectionTestUtils.setField(modelBuildService, "modelService", modelService);
         ReflectionTestUtils.setField(modelBuildService, "segmentHelper", segmentHelper);
         ReflectionTestUtils.setField(modelBuildService, "aclEvaluate", aclEvaluate);
+        ReflectionTestUtils.setField(modelBuildService, "accessService", accessService);
+        ReflectionTestUtils.setField(modelBuildService, "userGroupService", userGroupService);
 
         ReflectionTestUtils.setField(nModelController, "modelService", modelService);
         ReflectionTestUtils.setField(nModelController, "fusionModelService", fusionModelService);
@@ -2865,7 +2867,7 @@ public class SecondStorageLockTest implements JobWaiter {
             int replica = 1;
             configClickhouseWith(clickhouse, replica, catalog, () -> {
                 QueryOperator queryOperator = SecondStorageFactoryUtils.createQueryMetricOperator(getProject());
-                queryOperator.modifyColumnByCardinality("default", "table");
+                queryOperator.modifyColumnByCardinality("default", "table", Sets.newHashSet());
 
                 buildIncrementalLoadQuery("2012-01-02", "2012-01-03");
                 waitAllJobFinish();
@@ -2928,6 +2930,18 @@ public class SecondStorageLockTest implements JobWaiter {
                         LOW_CARDINALITY_STRING);
                 try (Connection connection = DriverManager.getConnection(clickhouse1.getJdbcUrl());
                         val stmt = connection.createStatement()) {
+                    val rs = stmt.executeQuery(String.format(Locale.ROOT, "desc %s.%s", database, destTableName));
+                    while (rs.next()) {
+                        if ("c4".equals(rs.getString(1))) {
+                            rows = rs.getString(2);
+                        }
+                    }
+                }
+                assertEquals(LOW_CARDINALITY_STRING, rows);
+
+                queryOperator.modifyColumnByCardinality(database, destTableName, Sets.newHashSet(4));
+                try (Connection connection = DriverManager.getConnection(clickhouse1.getJdbcUrl());
+                     val stmt = connection.createStatement()) {
                     val rs = stmt.executeQuery(String.format(Locale.ROOT, "desc %s.%s", database, destTableName));
                     while (rs.next()) {
                         if ("c4".equals(rs.getString(1))) {

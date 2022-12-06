@@ -16,21 +16,39 @@
  * limitations under the License.
  */
 
-package org.apache.kylin.rest.service;
+package org.apache.kylin.tool;
 
-import org.apache.kylin.junit.annotation.MetadataInfo;
+import org.apache.kylin.common.util.NLocalFileMetadataTestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
 
-@MetadataInfo
-class TestSnapshotSourceTableStatsService {
-    private static final String DEFAULT_PROJECT = "default";
-    @InjectMocks
-    private final SnapshotSourceTableStatsService locationService = Mockito.spy(SnapshotSourceTableStatsService.class);
+public class ProjectToolTest extends NLocalFileMetadataTestCase {
+
+    @Before
+    public void setup() throws Exception {
+        createTestMetadata();
+    }
+
+    @After
+    public void teardown() {
+        cleanupTestMetadata();
+    }
 
     @Test
-    void saveSnapshotViewMapping() {
+    public void testProjectsList() {
+        Assert.assertFalse(new ProjectTool().projectsList().isEmpty());
+    }
 
+    @Test
+    public void testProjectTool() {
+        String errorMsg = "";
+        try {
+            ProjectTool.main(new String[]{});
+        } catch (Exception e) {
+            errorMsg = e.getMessage();
+        }
+        Assert.assertTrue(errorMsg.isEmpty());
     }
 }
