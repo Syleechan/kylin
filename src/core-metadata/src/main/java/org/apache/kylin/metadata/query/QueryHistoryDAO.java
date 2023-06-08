@@ -18,6 +18,7 @@
 
 package org.apache.kylin.metadata.query;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ public interface QueryHistoryDAO {
     void deleteQueryHistoriesIfMaxSizeReached();
 
     void deleteQueryHistoriesIfRetainTimeReached();
+
+    void deleteQueryHistoriesIfRetainDayReached() throws SQLException;
 
     void deleteOldestQueryHistoriesByProject(String project, int deleteCount);
 

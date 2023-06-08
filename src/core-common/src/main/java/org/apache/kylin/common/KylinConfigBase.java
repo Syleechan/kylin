@@ -2917,6 +2917,10 @@ public abstract class KylinConfigBase implements Serializable {
                 TimeUnit.SECONDS);
     }
 
+    public int getQueryHistorySurvivalDay() {
+        return Integer.parseInt(getOptional("kylin.query.queryhistory.survival-day-threshold", "3"));
+    }
+
     public int getQueryHistoryAccelerateBatchSize() {
         return Integer.parseInt(this.getOptional("kylin.favorite.query-history-accelerate-batch-size", "1000"));
     }

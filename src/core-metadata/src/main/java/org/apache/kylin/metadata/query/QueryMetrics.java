@@ -84,6 +84,7 @@ public class QueryMetrics extends SchedulerEventNotifier {
     protected long queryFirstDayOfMonth;
     protected long queryFirstDayOfWeek;
     protected long queryDay;
+    protected int weekDay;
 
     protected boolean tableIndexUsed;
     protected boolean aggIndexUsed;

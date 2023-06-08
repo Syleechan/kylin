@@ -96,6 +96,7 @@ public class QueryMetricsContext extends QueryMetrics {
         this.queryFirstDayOfMonth = TimeUtil.getMonthStart(this.queryTime);
         this.queryDay = TimeUtil.getDayStart(this.queryTime);
         this.queryFirstDayOfWeek = TimeUtil.getWeekStart(this.queryTime);
+        this.weekDay = TimeUtil.getWeekOfDate(this.queryTime);
 
         this.submitter = context.getAclInfo().getUsername();
 

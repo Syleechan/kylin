@@ -93,6 +93,10 @@ public class RDBMSQueryHistoryDAO implements QueryHistoryDAO {
         jdbcQueryHisStore.dropQueryHistoryTable();
     }
 
+    public void truncateQueryHistoryTable(String part) throws SQLException {
+        jdbcQueryHisStore.truncateHistoryTablePartition(part);
+    }
+
     public void deleteAllQueryHistory() {
         jdbcQueryHisStore.deleteQueryHistory();
     }
@@ -123,6 +127,19 @@ public class RDBMSQueryHistoryDAO implements QueryHistoryDAO {
             deleteQueryHistoryAndRealization((int) rangeOutCount);
         }
     }
+
+    public void deleteQueryHistoriesIfRetainDayReached() throws SQLException {
+        int survivalDay = KylinConfig.getInstanceFromEnv().getQueryHistorySurvivalDay();
+        long currentTimeMillis = System.currentTimeMillis();
+        int weekOfDate = TimeUtil.getWeekOfDate(currentTimeMillis);
+        // 1, 2, 3, 4, 5, 6, 7
+        int index = (weekOfDate - survivalDay + 6) % 7;
+        int num = index == 0 ? 7 : index;
+        String part = "p" + num;
+        jdbcQueryHisStore.truncateHistoryTablePartition(part);
+        logger.info("Cleanup query history truncate partition {}, current weekday is {}, survival day is {}", part, weekOfDate, survivalDay);
+    }
+
 
     public void deleteQueryHistoryAndRealization(int deleteCount) {
         int singleLimit = KylinConfig.getInstanceFromEnv().getQueryHistorySingleDeletionSize();

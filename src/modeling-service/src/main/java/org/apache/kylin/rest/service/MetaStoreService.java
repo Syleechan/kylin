@@ -802,7 +802,7 @@ public class MetaStoreService extends BasicService {
     public void cleanupMeta(String project) {
         if (project.equals(UnitOfWork.GLOBAL_UNIT)) {
             RoutineToolHelper.cleanGlobalSourceUsage();
-            QueryHisStoreUtil.cleanQueryHistory();
+            QueryHisStoreUtil.cleanQueryHistoryNew();
         } else {
             RoutineToolHelper.cleanMetaByProject(project);
         }

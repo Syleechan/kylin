@@ -64,11 +64,14 @@ public class QueryHisStoreUtil {
 
     private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
     private static final String CREATE_QUERY_HISTORY_TABLE = "create.queryhistory.store.table";
+    private static final String CREATE_QUERY_HISTORY_INDEX0 = "create.queryhistory.store.tableindex0";
     private static final String CREATE_QUERY_HISTORY_INDEX1 = "create.queryhistory.store.tableindex1";
     private static final String CREATE_QUERY_HISTORY_INDEX2 = "create.queryhistory.store.tableindex2";
     private static final String CREATE_QUERY_HISTORY_INDEX3 = "create.queryhistory.store.tableindex3";
     private static final String CREATE_QUERY_HISTORY_INDEX4 = "create.queryhistory.store.tableindex4";
     private static final String CREATE_QUERY_HISTORY_INDEX5 = "create.queryhistory.store.tableindex5";
+
+    private static final String CREATE_QUERY_HISTORY_INDEX6 = "create.queryhistory.store.tableindex6";
 
     private static final String CREATE_QUERY_HISTORY_REALIZATION_TABLE = "create.queryhistoryrealization.store.table";
     private static final String CREATE_QUERY_HISTORY_REALIZATION_INDEX1 = "create.queryhistoryrealization.store.tableindex1";
@@ -107,6 +110,14 @@ public class QueryHisStoreUtil {
             sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
                     String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_TABLE), qhTableName)
                             .getBytes(DEFAULT_CHARSET)),
+                    DEFAULT_CHARSET));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_INDEX0), qhTableName,
+                            qhTableName).getBytes(DEFAULT_CHARSET)),
+                    DEFAULT_CHARSET));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_INDEX6), qhTableName,
+                            qhTableName).getBytes(DEFAULT_CHARSET)),
                     DEFAULT_CHARSET));
             sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
                     String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_INDEX1), qhTableName,
@@ -197,6 +208,13 @@ public class QueryHisStoreUtil {
             log.info("Query histories cleanup for project<{}> finished, it took {}ms", projectName, watch.getTime());
         } catch (Exception e) {
             log.error("Clean query histories for project<{}> failed", projectName, e);
+        }
+    }
+
+    @SneakyThrows
+    public static void cleanQueryHistoryNew() {
+        try (SetThreadName ignored = new SetThreadName("QueryHistoryNewCleanWorker")) {
+            getQueryHistoryDao().deleteQueryHistoriesIfRetainDayReached();
         }
     }
 

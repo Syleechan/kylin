@@ -62,6 +62,7 @@ public class QueryHistoryTable extends SqlTable {
     public final SqlColumn<String> engineType = column("engine_type", JDBCType.VARCHAR);
     public final SqlColumn<String> projectName = column("project_name", JDBCType.BIGINT);
     public final SqlColumn<String> errorType = column("error_type", JDBCType.VARCHAR);
+    public final SqlColumn<Integer> weekDay = column("week_day", JDBCType.TINYINT);
     public final SqlColumn<QueryHistoryInfo> queryHistoryInfo = column("reserved_field_3", JDBCType.BLOB,
             QueryHistoryInfoHandler.class.getName());
 

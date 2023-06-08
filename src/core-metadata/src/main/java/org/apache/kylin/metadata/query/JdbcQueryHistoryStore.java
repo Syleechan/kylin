@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -120,6 +121,19 @@ public class JdbcQueryHistoryStore {
                     String.format(Locale.ROOT, "drop table %s;", qhTableName).getBytes(DEFAULT_CHARSET)),
                     DEFAULT_CHARSET));
         }
+    }
+
+    public void truncateHistoryTablePartition(String partition) throws SQLException {
+        StopWatch watch = StopWatch.createStarted();
+        try (Connection connection = dataSource.getConnection()) {
+            ScriptRunner sr = new ScriptRunner(connection);
+            sr.setLogWriter(new PrintWriter(new OutputStreamWriter(new LogOutputStream(log), DEFAULT_CHARSET)));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, "alter table %s truncate partition %s;", qhTableName, partition)
+                            .getBytes(DEFAULT_CHARSET)), DEFAULT_CHARSET));
+        }
+        watch.stop();
+        log.info("truncate table {} partition {} cost {}ms", qhTableName, partition, watch.getTime());
     }
 
     public int insert(QueryMetrics queryMetrics) {
@@ -586,6 +600,7 @@ public class JdbcQueryHistoryStore {
                 .map(queryHistoryTable.queryDay).toPropertyWhenPresent("queryDay", queryMetrics::getQueryDay) //
                 .map(queryHistoryTable.projectName).toPropertyWhenPresent("projectName", queryMetrics::getProjectName) //
                 .map(queryHistoryTable.queryHistoryInfo).toProperty("queryHistoryInfo") //
+                .map(queryHistoryTable.weekDay).toPropertyWhenPresent("weekDay", queryMetrics::getWeekDay)
                 .build().render(RenderingStrategies.MYBATIS3);
     }
 

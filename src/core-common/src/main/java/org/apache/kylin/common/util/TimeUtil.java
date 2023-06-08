@@ -96,6 +96,13 @@ public class TimeUtil {
         return calendar.getTimeInMillis();
     }
 
+    public static int getWeekOfDate(long ts) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+        calendar.setTimeInMillis(ts);
+        int weekDay = calendar.get(Calendar.DAY_OF_WEEK);
+        return weekDay;
+    }
+
     public static long timeStringAs(String str, TimeUnit unit) {
         String lower = str.toLowerCase(Locale.ROOT).trim();
 
