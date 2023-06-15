@@ -137,7 +137,8 @@ public class RDBMSQueryHistoryDAO implements QueryHistoryDAO {
         int num = index == 0 ? 7 : index;
         String part = "p" + num;
         jdbcQueryHisStore.truncateHistoryTablePartition(part);
-        logger.info("Cleanup query history truncate partition {}, current weekday is {}, survival day is {}", part, weekOfDate, survivalDay);
+        jdbcQueryHisStore.truncateHistoryRealizationTablePartition(part);
+        logger.info("Cleanup query histories truncate partition {}, current weekday is {}, survival day is {}", part, weekOfDate, survivalDay);
     }
 
 

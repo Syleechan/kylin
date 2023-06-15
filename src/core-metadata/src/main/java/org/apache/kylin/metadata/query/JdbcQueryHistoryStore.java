@@ -136,6 +136,19 @@ public class JdbcQueryHistoryStore {
         log.info("truncate table {} partition {} cost {}ms", qhTableName, partition, watch.getTime());
     }
 
+    public void truncateHistoryRealizationTablePartition(String partition) throws SQLException {
+        StopWatch watch = StopWatch.createStarted();
+        try (Connection connection = dataSource.getConnection()) {
+            ScriptRunner sr = new ScriptRunner(connection);
+            sr.setLogWriter(new PrintWriter(new OutputStreamWriter(new LogOutputStream(log), DEFAULT_CHARSET)));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, "alter table %s truncate partition %s;", qhRealizationTableName, partition)
+                            .getBytes(DEFAULT_CHARSET)), DEFAULT_CHARSET));
+        }
+        watch.stop();
+        log.info("truncate table {} partition {} cost {}ms", qhRealizationTableName, partition, watch.getTime());
+    }
+
     public int insert(QueryMetrics queryMetrics) {
         try (SqlSession session = sqlSessionFactory.openSession()) {
             QueryHistoryMapper qhMapper = session.getMapper(QueryHistoryMapper.class);
@@ -620,8 +633,10 @@ public class JdbcQueryHistoryStore {
                 .map(queryHistoryRealizationTable.queryTime)
                 .toPropertyWhenPresent("queryTime", realizationMetrics::getQueryTime)
                 .map(queryHistoryRealizationTable.projectName)
-                .toPropertyWhenPresent("projectName", realizationMetrics::getProjectName).build()
-                .render(RenderingStrategies.MYBATIS3);
+                .toPropertyWhenPresent("projectName", realizationMetrics::getProjectName)
+                .map(queryHistoryRealizationTable.weekDay)
+                .toPropertyWhenPresent("weekDay", realizationMetrics::getWeekDay)
+                .build().render(RenderingStrategies.MYBATIS3);
     }
 
     private SelectStatementProvider queryQueryHistoriesByConditionsProvider(QueryHistoryRequest request, int limit,

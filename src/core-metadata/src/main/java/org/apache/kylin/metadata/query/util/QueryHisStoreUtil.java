@@ -74,8 +74,10 @@ public class QueryHisStoreUtil {
     private static final String CREATE_QUERY_HISTORY_INDEX6 = "create.queryhistory.store.tableindex6";
 
     private static final String CREATE_QUERY_HISTORY_REALIZATION_TABLE = "create.queryhistoryrealization.store.table";
+    private static final String CREATE_QUERY_HISTORY_REALIZATION_INDEX0 = "create.queryhistoryrealization.store.tableindex0";
     private static final String CREATE_QUERY_HISTORY_REALIZATION_INDEX1 = "create.queryhistoryrealization.store.tableindex1";
     private static final String CREATE_QUERY_HISTORY_REALIZATION_INDEX2 = "create.queryhistoryrealization.store.tableindex2";
+    private static final String CREATE_QUERY_HISTORY_REALIZATION_INDEX6 = "create.queryhistoryrealization.store.tableindex6";
 
     private QueryHisStoreUtil() {
     }
@@ -162,11 +164,19 @@ public class QueryHisStoreUtil {
                             qhRealizationTableName).getBytes(Charset.defaultCharset())),
                     Charset.defaultCharset()));
             sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_REALIZATION_INDEX0),
+                            qhRealizationTableName, qhRealizationTableName).getBytes(Charset.defaultCharset())),
+                    Charset.defaultCharset()));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
                     String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_REALIZATION_INDEX1),
                             qhRealizationTableName, qhRealizationTableName).getBytes(Charset.defaultCharset())),
                     Charset.defaultCharset()));
             sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
                     String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_REALIZATION_INDEX2),
+                            qhRealizationTableName, qhRealizationTableName).getBytes(Charset.defaultCharset())),
+                    Charset.defaultCharset()));
+            sr.runScript(new InputStreamReader(new ByteArrayInputStream(//
+                    String.format(Locale.ROOT, properties.getProperty(CREATE_QUERY_HISTORY_REALIZATION_INDEX6),
                             qhRealizationTableName, qhRealizationTableName).getBytes(Charset.defaultCharset())),
                     Charset.defaultCharset()));
         }

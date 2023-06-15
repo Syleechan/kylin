@@ -138,6 +138,8 @@ public class QueryMetrics extends SchedulerEventNotifier {
 
         protected String projectName;
 
+        protected int weekDay;
+
         protected boolean isSecondStorage;
 
         protected boolean isStreamingLayout;
